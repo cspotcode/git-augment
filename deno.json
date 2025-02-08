@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "@std/cli": "jsr:@std/cli@^1.0.12",
+    "cmd-ts": "npm:cmd-ts@^0.13.0"
+  }
+}
