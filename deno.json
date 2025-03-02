@@ -1,5 +1,7 @@
 {
+  "version": "0.0.1",
   "imports": {
+    "@david/dax": "jsr:@david/dax@^0.42.0",
     "@std/cli": "jsr:@std/cli@^1.0.12",
     "cmd-ts": "npm:cmd-ts@^0.13.0"
   }

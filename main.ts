@@ -1,22 +1,56 @@
+import * as cmd from 'npm:cmd-ts';
+import manifest from './deno.json' with {type: 'json'};
+import $ from '@david/dax';
 
-import * as cli from 'jsr:@std/cli';
+const _args = {
+    rest: cmd.rest({
+        displayName: 'rest of args',
+        description: 'Everything else is captured here'
+    })
+}
 
-cli.parseArgs(Deno.args, {
-    
+const restoreCmd = cmd.command({
+    name: 'restore',
+    args: {},
+    handler(args) {
+        console.log(`This is the restore subcommand: ${args}`);
+    }
 });
 
-// import { Command } from "https://deno.land/x/cliffy@v1.0.0-rc.3/command/mod.ts";
+const saveCmd = cmd.command({
+    name: 'save',
+    args: {},
+    async handler(args) {
+        console.log(`This is the save subcommand: ${args}`);
+        
+        const gitConfig = await $`git config --list -z`.stdout('piped');
+        const gitConfigValues = gitConfig.stdout.split('\0').map(pair => {
+            const split = pair.indexOf('\n');
+            const sectionKey = pair.slice(0, split);
+            const splitA = sectionKey.indexOf('.');
+            const splitB = sectionKey.lastIndexOf('.');
+            const section = sectionKey.slice(0, splitA);
+            const key = sectionKey.slice(splitB + 1);
+            const subsection = splitA === splitB ? undefined : sectionKey.slice(splitA + 1, splitB);
+            const value = pair.slice(split + 1);
+            return {
+                section, subsection, key, value
+            };
+        });
+        // Build into an object:
+        section(name, subsection name)
+        console.dir(gitConfigValues);
+    }
+});
 
-// await new Command()
-//     .name("git-augment")
-//     .version("1.0.0")
-//     .description("A Git extension tool")
-//     .command("init", "Initialize the git-augment configuration")
-//     .action(() => {
-//         console.log("Initializing git-augment...");
-//     })
-//     .command("status", "Show current git-augment status")
-//     .action(() => {
-//         console.log("Checking status...");
-//     })
-//     .parse(Deno.args);
+const gitAugment = cmd.subcommands({
+    name: 'git-augment',
+    cmds: {
+        [restoreCmd.name]: restoreCmd,
+        [saveCmd.name]: saveCmd,
+    },
+    description: 'Save and restore an overlay of additions and modifications to a repository without committing them.',
+    version: manifest.version,
+});
+
+cmd.run(gitAugment, Deno.args);
